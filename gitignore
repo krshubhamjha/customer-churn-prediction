@@ -1,0 +1,54 @@
+# ================================================================
+# .gitignore — Customer Churn Prediction Project
+# ================================================================
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Environment files
+.env
+.env.local
+.venv/
+venv/
+env/
+
+# Log files
+*.log
+
+# Model files (too large for GitHub)
+# Uncomment below if pkl files are too large
+# *.pkl
+
+# Data files (optional — uncomment if dataset is large)
+# data/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Test files
+.pytest_cache/
+.coverage
+
+# Streamlit secrets
+.streamlit/secrets.toml
