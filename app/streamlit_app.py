@@ -92,12 +92,14 @@ st.markdown("""
 @st.cache_resource
 def load_model():
     try:
-        model    = joblib.load('best_model.pkl')
-        scaler   = joblib.load('scaler.pkl')
-        features = joblib.load('feature_names.pkl')
+        import os
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        model    = joblib.load(os.path.join(base_path, 'best_model.pkl'))
+        scaler   = joblib.load(os.path.join(base_path, 'scaler.pkl'))
+        features = joblib.load(os.path.join(base_path, 'feature_names.pkl'))
         return model, scaler, features
-    except:
-        st.error("Model files not found! Make sure best_model.pkl, scaler.pkl and feature_names.pkl are in the same folder.")
+    except Exception as e:
+        st.error(f"Error loading model: {e}")
         st.stop()
 
 model, scaler, feature_names = load_model()
