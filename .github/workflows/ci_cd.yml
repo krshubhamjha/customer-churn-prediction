@@ -1,0 +1,133 @@
+# ================================================================
+# CI/CD PIPELINE — CUSTOMER CHURN PREDICTION
+# File: .github/workflows/ci_cd.yml
+# ================================================================
+# Triggers automatically when you push to GitHub
+# Runs full ML pipeline
+# Deploys only if model improves
+# ================================================================
+
+name: Churn Prediction ML Pipeline
+
+# ----------------------------------------------------------------
+# When to trigger this pipeline
+# ----------------------------------------------------------------
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 1 * *'  # runs every 1st of month
+
+# ----------------------------------------------------------------
+# Jobs to run
+# ----------------------------------------------------------------
+jobs:
+
+  # --------------------------------------------------------------
+  # JOB 1 — RUN FULL ML PIPELINE
+  # --------------------------------------------------------------
+  ml_pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+
+    # Step 1 — Get code from GitHub
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Step 2 — Setup Python
+    - name: Setup Python 3.11
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    # Step 3 — Cache pip packages
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+    # Step 4 — Install requirements
+    - name: Install requirements
+      run: |
+        pip install pandas numpy scikit-learn
+        pip install xgboost shap imbalanced-learn
+        pip install joblib streamlit plotly
+
+    # Step 5 — Run data validation
+    - name: Step 1 - Validate data
+      run: |
+        echo "Running data validation..."
+        python src/validate_data.py
+        echo "Data validation passed!"
+
+    # Step 6 — Run data loading
+    - name: Step 2 - Load data
+      run: |
+        echo "Loading data..."
+        python src/load_data.py
+        echo "Data loading passed!"
+
+    # Step 7 — Run feature engineering
+    - name: Step 3 - Feature engineering
+      run: |
+        echo "Running feature engineering..."
+        python src/feature_engineering.py
+        echo "Feature engineering passed!"
+
+    # Step 8 — Run model training
+    - name: Step 4 - Train model
+      run: |
+        echo "Training model..."
+        python src/train_model.py
+        echo "Model training passed!"
+
+    # Step 9 — Run model evaluation
+    - name: Step 5 - Evaluate model
+      run: |
+        echo "Evaluating model..."
+        python src/evaluate_model.py
+        echo "Model evaluation passed!"
+
+    # Step 10 — Show results
+    - name: Show pipeline results
+      run: |
+        echo "Pipeline completed!"
+        cat metadata/evaluation_results.json
+
+    # Step 11 — Upload model as artifact
+    - name: Upload model artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: trained-model
+        path: |
+          models/best_model.pkl
+          models/scaler.pkl
+          models/feature_names.pkl
+        retention-days: 30
+
+  # --------------------------------------------------------------
+  # JOB 2 — NOTIFY RESULTS
+  # --------------------------------------------------------------
+  notify:
+    needs: ml_pipeline
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Pipeline Success
+      if: ${{ needs.ml_pipeline.result == 'success' }}
+      run: |
+        echo "✅ ML Pipeline completed successfully!"
+        echo "Model trained and evaluated"
+        echo "Streamlit app will auto-update"
+
+    - name: Pipeline Failed
+      if: ${{ needs.ml_pipeline.result == 'failure' }}
+      run: |
+        echo "❌ ML Pipeline failed!"
+        echo "Check logs for details"
+        echo "Old model kept — app still running"
