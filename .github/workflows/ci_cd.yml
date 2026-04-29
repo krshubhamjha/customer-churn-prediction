@@ -35,7 +35,7 @@ jobs:
 
     # Step 1 — Get code from GitHub
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     # Step 2 — Setup Python
     - name: Setup Python 3.11
@@ -45,7 +45,7 @@ jobs:
 
     # Step 3 — Cache pip packages
     - name: Cache pip packages
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
@@ -100,7 +100,7 @@ jobs:
 
     # Step 11 — Upload model as artifact
     - name: Upload model artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: trained-model
         path: |
